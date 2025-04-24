@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Peta Merchant Medan</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+    .info-box {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([3.58912, 98.67677], 15); // Titik pusat: Mandiri Balai Kota Medan
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  const merchants = [
+    {
+      nama: "Pojok Kesawan",
+      alamat: "Jl. Balaikota No.101D",
+      rating: "4.2",
+      jam: "",
+      telp: "",
+      link: "https://www.google.com/maps/place/Pojok+kesawan"
+    },
+    {
+      nama: "Medan Kota",
+      alamat: "Lapangan Merdeka",
+      rating: "3.8",
+      jam: "",
+      telp: "",
+      link: "https://www.google.com/maps/place/Medan+kota"
+    },
+    {
+      nama: "Titik Temu Cafe - Medan",
+      alamat: "Jl. Pos No.1",
+      rating: "4.8",
+      jam: "Closes 10.00 pm",
+      telp: "0821-6278-0173",
+      link: "https://www.google.com/maps/place/Titik+Temu+Cafe"
+    },
+    {
+      nama: "Cafe DuDu",
+      alamat: "Graha Red and White, Jalan Putri Hijau",
+      rating: "4.8",
+      jam: "·",
+      telp: "0813-7504-1863",
+      link: "https://www.google.com/maps/place/Cafe+DuDu"
+    },
+    {
+      nama: "Kedai Kopi Kesawan",
+      alamat: "Jl. Mesjid No.140",
+      rating: "4.2",
+      jam: "",
+      telp: "",
+      link: "https://www.google.com/maps/place/Kedai+Kopi+Kesawan"
+    }
+  ];
+
+  merchants.forEach((m, i) => {
+    const marker = L.marker([3.58912 + (i * 0.001), 98.67677 + (i * 0.001)]) // dummy lat/lon berbeda sedikit biar ga numpuk
+      .addTo(map)
+      .bindPopup(`
+        <div class='info-box'>
+          <strong>${m.nama}</strong><br/>
+          ${m.alamat}<br/>
+          Rating: ${m.rating}<br/>
+          Jam buka: ${m.jam}<br/>
+          Telp: ${m.telp || 'N/A'}<br/>
+          <a href='${m.link}' target='_blank'>Lihat di Google Maps</a>
+        </div>
+      `);
+  });
+</script>
+</body>
+</html>
