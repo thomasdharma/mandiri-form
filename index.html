@@ -58,7 +58,6 @@
     <label>PIC:</label>
     <input type="text" name="pic" required>
 
-    <!-- Hidden fields hasil OCR -->
     <input type="hidden" name="alamat">
     <input type="hidden" name="lat">
     <input type="hidden" name="lng">
@@ -68,14 +67,14 @@
 
   <div id="ocrResult"></div>
 
-  <!-- ✅ SCRIPT DITARUH DI AKHIR SEBELUM </body> -->
+  <!-- ✅ SCRIPT DI BAWAH UNTUK MENGHINDARI ERROR NULL -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const form = document.getElementById('merchantForm');
       const photoInput = document.getElementById('photo');
       const ocrResult = document.getElementById('ocrResult');
 
-      // 📸 OCR dari gambar
+      // OCR dari gambar
       photoInput.addEventListener('change', async () => {
         const file = photoInput.files[0];
         if (!file) return;
@@ -96,7 +95,7 @@
         form.alamat.value = alamatMatch ? alamatMatch[0] : '';
       });
 
-      // 🚀 Submit data ke Google Apps Script
+      // Submit data ke Apps Script
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -107,7 +106,7 @@
 
         try {
           const response = await fetch(
-            'https://script.google.com/macros/s/AKfycbRTnO3aqszDd2_IEsTd2gJJEfO4lGW87XE0rrpefP9v_a3skSXLcUxX2tkhpCEcv/exec', // GANTI URL INI JIKA BERUBAH
+            'https://script.google.com/macros/s/AKfycbRTnO3aqszDd2_IEsTd2gJJEfO4lGW87XE0rrpefP9v_a3skSXLcUxX2tkhpCEcv/exec',
             {
               method: 'POST',
               mode: 'cors',
