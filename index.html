@@ -3,142 +3,125 @@
 <head>
   <meta charset="UTF-8">
   <title>Form Akuisisi Merchant</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f1f1f1;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 480px;
-      margin: 40px auto;
       padding: 20px;
+      background: #f1f1f1;
+    }
+    form {
       background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 500px;
+      margin: auto;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
     }
-    .container img {
-      max-width: 140px;
-      display: block;
-      margin: 0 auto 20px;
-    }
-    h2 {
-      text-align: center;
-      color: #004799;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: 600;
-    }
-    input[type="text"],
-    input[type="file"],
-    button {
+    input, button {
       width: 100%;
+      margin-top: 10px;
       padding: 10px;
-      margin-top: 6px;
       font-size: 16px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      box-sizing: border-box;
     }
     button {
-      background: #004799;
+      background: #007bff;
       color: white;
-      font-weight: bold;
       border: none;
-      margin-top: 16px;
+      cursor: pointer;
     }
-    #ocrResult, #submitResult {
-      margin-top: 20px;
-      background: #f8f8f8;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-family: monospace;
+    #ocrResult {
       white-space: pre-wrap;
+      background: #eee;
+      padding: 10px;
+      margin-top: 20px;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <img src="assets/logo-mandiri.png" alt="Mandiri Logo" />
+  <h2 style="text-align:center;">Form Upload Akuisisi + OCR Lokasi</h2>
 
-    <h2>Form Akuisisi + Lokasi (OCR)</h2>
+  <form id="merchantForm">
+    <label>Nama Toko:</label>
+    <input type="text" name="namaToko" required>
 
-    <form id="merchantForm">
-      <label>Nama Toko:</label>
-      <input type="text" name="nama" required />
+    <label>Upload Foto GPS (dengan overlay):</label>
+    <input type="file" id="photo" accept="image/*" required>
 
-      <label>Upload Foto GPS (overlay):</label>
-      <input type="file" id="photo" accept="image/*" required />
+    <label>Produk:</label>
+    <input type="text" name="produk" required>
 
-      <label>Produk:</label>
-      <input type="text" name="produk" required />
+    <label>PIC:</label>
+    <input type="text" name="pic" required>
 
-      <label>PIC:</label>
-      <input type="text" name="pic" required />
+    <!-- Hidden fields dari hasil OCR -->
+    <input type="hidden" name="alamat">
+    <input type="hidden" name="lat">
+    <input type="hidden" name="lng">
 
-      <!-- Hidden auto-extracted -->
-      <input type="hidden" name="alamat" />
-      <input type="hidden" name="lat" />
-      <input type="hidden" name="lng" />
+    <button type="submit">Kirim</button>
+  </form>
 
-      <button type="submit">Kirim</button>
-    </form>
-
-    <div id="ocrResult">📸 OCR belum dijalankan.</div>
-    <div id="submitResult"></div>
-  </div>
+  <div id="ocrResult"></div>
 
   <script>
-    const form = document.getElementById("merchantForm");
-    const photoInput = document.getElementById("photo");
-    const ocrResult = document.getElementById("ocrResult");
-    const submitResult = document.getElementById("submitResult");
+    const form = document.getElementById('merchantForm');
+    const photoInput = document.getElementById('photo');
+    const ocrResult = document.getElementById('ocrResult');
 
-    photoInput.addEventListener("change", async () => {
+    // Extract teks dari gambar
+    photoInput.addEventListener('change', async () => {
       const file = photoInput.files[0];
       if (!file) return;
 
-      ocrResult.textContent = "📷 Membaca teks dari gambar...";
       const image = URL.createObjectURL(file);
+      ocrResult.textContent = "Membaca teks dari foto...";
 
       const result = await Tesseract.recognize(image, 'eng');
       const text = result.data.text;
       ocrResult.textContent = text;
 
-      const latMatch = text.match(/Lat\s*([0-9\.\-]+)/i);
-      const lngMatch = text.match(/Long\s*([0-9\.\-]+)/i);
-      const alamatMatch = text.match(/Jalan.*(?:Indonesia)?/i);
+      // Regex parsing lokasi
+      const latMatch = text.match(/Lat\s*[:\-]?\s*([0-9\.\-]+)/i);
+      const lngMatch = text.match(/Long\s*[:\-]?\s*([0-9\.\-]+)/i);
+      const alamatMatch = text.match(/Jalan\s.+/i);
 
       form.lat.value = latMatch ? latMatch[1] : '';
       form.lng.value = lngMatch ? lngMatch[1] : '';
       form.alamat.value = alamatMatch ? alamatMatch[0] : '';
     });
 
-    form.addEventListener("submit", async (e) => {
+    // Submit ke Google Apps Script
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      submitResult.textContent = "🔄 Mengirim data...";
 
-      const data = new FormData(form);
-      const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbzKH1hSlonqj_whU5p8Lk6-DMnWqMq7L3gJ0mmAeVXQVzn_nK3hbm1cMlrv4St5yKieqA/exec",
-        {
-          method: "POST",
-          body: data,
+      const formData = new FormData(form);
+      const plainData = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch('https://script.google.com/macros/s/AKfycbzKH1hSlonqj_whU5p8Lk6-DMnWqMq7L3gJ0mmAeVXQVzn_nK3hbm1cMlrv4St5yKieqA/exec', {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(plainData)
+        });
+
+        if (response.ok) {
+          alert('✅ Data berhasil dikirim!');
+          form.reset();
+          ocrResult.textContent = '';
+        } else {
+          alert('❌ Gagal mengirim data!');
+          console.error(await response.text());
         }
-      );
-
-      const resultText = await response.text();
-      submitResult.textContent = `📬 ${resultText}`;
-
-      if (response.ok) {
-        form.reset();
-        ocrResult.textContent = "📸 OCR belum dijalankan.";
+      } catch (error) {
+        alert('⚠️ Terjadi kesalahan jaringan!');
+        console.error(error);
       }
     });
   </script>
